@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+
+<link rel="apple-touch-icon" sizes="57x57" href="bananaFavicon/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="bananaFavicon/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="bananaFavicon/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="bananaFavicon/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="bananaFavicon/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="bananaFavicon/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="bananaFavicon/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="bananaFavicon/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="bananaFavicon/apple-icon-180x180.png">
+<link rel="icon" type="image/png" sizes="192x192"  href="bananaFavicon/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="bananaFavicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="bananaFavicon/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="bananaFavicon/favicon-16x16.png">
+<link rel="manifest" href="bananaFavicon/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="bananaFavicon/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script type='text/javascript' src='http://hellicarstudio.com/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script>
+<script type='text/javascript' src='http://hellicarstudio.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+<script type='text/javascript' src='helperFunctions.js'></script>
+<script type='text/javascript' src='fruitColors.js'></script>
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto" rel="stylesheet">
+</head>
+
+<style>
+h1 {
+	text-align: center;
+	font-family: 'Roboto', sans-serif;
+}
+
+p {
+	text-align: center;
+	font-family: 'Open Sans', sans-serif;
+	padding-top: 3%;
+}
+</style>
+
+<body>
+ 	<div style="position: absolute; top: 40%; left:50%; transform: translate(-50%, -50%); width: 600px; margin:0 auto;">
+ 		<h1>Bananafterlife</h1>
+ 		<img style="position: absolute; z-index: 1; width: 600px" src="Overlays/banana.png">
+		<canvas id="banana" width="600px" height="400px"></canvas>
+		<p>Our hero banana ripens and rots in real time. Once fully rotten it travels to bananavana and back; returning to life as an unripe banana. Check back in to follow our hero on her banantastic voyage.</p>
+	</div>
+	<script id="2d-vertex-shader" type="x-shader/x-vertex"></script>
+
+	<script id="2d-fragment-shader" type="x-shader/x-fragment"></script>
+
+	<script>
+ 		var canvas = document.getElementById('banana');
+		var gl = canvas.getContext('experimental-webgl');
+		var body = document.body;
+		var buffer = gl.createBuffer();
+		var program = gl.createProgram();// = new WebGLProgram();
+
+ 		var velocities = getRandomArray(-0.002, 0.002, 30);
+		var points = getRandomArray(0.0, 1.0, 30);
+		var background = new Array();
+		var texture = defaultTexture(gl);
+
+ 		var vertID = "2d-vertex-shader";
+ 		var vertPath = "Shaders/Vertex.glsl";
+ 		var fragID = "2d-fragment-shader";
+ 		var fragPath = "Shaders/Fragment.glsl";
+
+		var velocities = getRandomArray(-0.002, 0.002, 20);
+		var points = getRandomArray(0.0, 1.0, 20);
+		var colors = new Array();
+		var background = new Array();
+		var texture = defaultTexture(gl);
+
+		var bananaCols = new Array();
+
+		var inCols = new Array();
+
+		var start = new Date(2017, 9, 4);
+		var now = new Date();
+
+		var randomCols = new Array();
+		for(var i = 0; i < 3; i++) {
+			randomCols[i] = getRandomColor();
+		}
+
+		bananaCols[0] = bananaColors[0];
+		bananaCols[1] = bananaColors[1];
+		bananaCols[2] = bananaColors[2];
+
+		var setUniforms = function(gl, colors, texture) {
+
+			now = new Date();
+
+
+			var ripeningTime = 259200;
+
+			var startMillis = start.valueOf();
+			var nowMillis = now.valueOf();
+			var millisDiff = nowMillis - startMillis;
+			millisDiff %= ripeningTime*(4*1000);
+
+			var secsElapsed = millisDiff / 1000;
+			//set fragment shader uniform
+			var pointsLoc = gl.getUniformLocation(program, "u_points");
+			gl.uniform2fv(pointsLoc, points);
+
+
+			if(secsElapsed < ripeningTime) {
+				for(var i = 0; i < 3; i++) {
+					bananaCols[i] = lerpColor(bananaColors[i], bananaColors[i+3], secsElapsed/ripeningTime);
+				}
+				for(var i = 0; i < 3; i++) {
+					randomCols[i] = getRandomColor();
+				}
+			} else if(secsElapsed < ripeningTime*2) {
+				for(var i = 0; i < 3; i++) {
+					bananaCols[i] = lerpColor(bananaColors[i+3], bananaColors[i+6], (secsElapsed - ripeningTime)/ripeningTime);
+				}
+			} else if(secsElapsed < ripeningTime*3){
+				for(var i = 0; i < 3; i++) {
+					bananaCols[i] = lerpColor(bananaColors[i+6], randomCols[i], (secsElapsed - ripeningTime*2)/ripeningTime);
+				}
+			} else {
+				for(var i = 0; i < 3; i++) {
+					bananaCols[i] = lerpColor(randomCols[i], bananaColors[i], (secsElapsed - ripeningTime*3)/ripeningTime);
+				}
+			}
+
+			inCols = setColors(bananaCols);
+
+			var colorsLoc = gl.getUniformLocation(program, "u_colors");
+			gl.uniform3fv(colorsLoc, inCols);
+
+			var textureLoc = gl.getUniformLocation(program, "u_texture");
+			gl.uniform1i(textureLoc, texture);
+		}
+
+		var drawGradient = function(gl, cols, texture) {
+			//clear the buffer
+			gl.clearColor(1.0, 1.0, 1.0, 1.0);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+
+			gl.useProgram(program);
+
+			// set vertex shader attributes
+			positionLocation = gl.getAttribLocation(program, "a_position");
+			gl.enableVertexAttribArray(positionLocation);
+			gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+			setUniforms(gl, bananaCols, texture);
+
+			//draw the triangles with the shaders!
+			gl.drawArrays(gl.TRIANGLES, 0, 6);
+		}
+
+		function animate() {
+			animatePoints(points, velocities);
+
+			drawGradient(gl, bananaCols, texture);
+
+			requestAnimationFrame(function() {
+				animate();
+			});
+		}
+
+		loadShader(vertID, vertPath, function() { loadShader(fragID, fragPath, function () { loadScene(gl, buffer, program, canvas, animate) })});
+
+	</script>
+</body>
+</html>
