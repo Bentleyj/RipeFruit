@@ -12,12 +12,13 @@
 	  		// Uniform for the resolution of the CANVAS! (not the screen) and normalized mouse position
 	  		uniform vec2 u_points[NUM_POINTS];
 	  		uniform vec3 u_colors[NUM_COLORS];
+	  		uniform vec2 u_resolution;
 	  		uniform float u_time;
 	  		uniform sampler2D u_texture;
 
 	  		void main() {
 	  			//Normalize the frag coord to [0, 1]
-	  			vec2 uv = gl_FragCoord.xy / vec2(600.0, 600.0);
+	  			vec2 uv = gl_FragCoord.xy / vec2(u_resolution.x, u_resolution.y);
 	  			uv.y = 1.0 - uv.y;
 
 	  			vec2 cPos = vec2(0.5, 0.5);

@@ -30,27 +30,25 @@
 </head>
 
 <style>
-h1 {
-	text-align: center;
-	font-family: 'Roboto', sans-serif;
-}
-
 p {
 	text-align: center;
 	font-family: 'Open Sans', sans-serif;
 	padding-top: 3%;
+	font-size: 75%;
 }
 </style>
 
 <body>
- 	<div style="position: absolute; top: 40%; left:50%; transform: translate(-50%, -50%); width: 600px; margin:0 auto;">
+ 	<div id="container" style="position: relative; margin-left: 25%; margin-top:5%; background: red;">
  		<!-- <h1>Bananafterlife</h1> -->
- 		<img style="position: absolute; z-index: 1; width: 600px" src="Overlays/banana3.png">
-		<canvas id="banana" width="600px" height="400px"></canvas>
-		<div style="width: 75%; margin:0 auto;">
-				<p style="font-size: 75%;">Our hero banana ripens in real time. Once fully ripe it travels to bananavana and back; returning to life as an unripe banana. Check back in to follow our hero on her banantastic voyage.</p>
+ 		<img style="position: absolute; width: 101%; height: 101%;" src="Overlays/banana3.png">
+		<canvas id="banana" style="width: 100%; height: 100%;" ></canvas>
+		<div style="position: relative; width: 75%; margin:0 auto;">
+			<p>Our hero banana ripens in real time. Once fully ripe it travels to bananavana and back; returning to life as an unripe banana. Check back in to follow our hero on her banantastic voyage.</p>
 		</div>
 	</div>
+
+
 
 	<script id="2d-vertex-shader" type="x-shader/x-vertex"></script>
 
@@ -61,7 +59,7 @@ p {
 		var gl = canvas.getContext('experimental-webgl');
 		var body = document.body;
 		var buffer = gl.createBuffer();
-		var program = gl.createProgram();// = new WebGLProgram();
+		var program = gl.createProgram();
 
  		var velocities = getRandomArray(-0.002, 0.002, 30);
 		var points = getRandomArray(0.0, 1.0, 30);
@@ -94,6 +92,13 @@ p {
 		bananaCols[0] = bananaColors[0];
 		bananaCols[1] = bananaColors[1];
 		bananaCols[2] = bananaColors[2];
+
+		function resize(canvas) {
+			var displayWidth  = window.innerWidth * 0.5;
+			var displayHeight = displayWidth * 1113 / 1596;
+			canvas.style.width = displayWidth + "px";
+			canvas.style.height = displayHeight + "px";
+		}
 
 		var setUniforms = function(gl, colors, texture) {
 
@@ -136,11 +141,21 @@ p {
 
 			inCols = setColors(bananaCols);
 
+			var res = {};
+
+			res.x = canvas.clientWidth;
+			res.y = canvas.clientHeight;
+
+			console.log(res.x / res.y);
+
 			var colorsLoc = gl.getUniformLocation(program, "u_colors");
 			gl.uniform3fv(colorsLoc, inCols);
 
 			var textureLoc = gl.getUniformLocation(program, "u_texture");
 			gl.uniform1i(textureLoc, texture);
+
+			var resolutionLoc = gl.getUniformLocation(program, "u_resolution");
+			gl.uniform2f(resolutionLoc, res.x, res.y);
 		}
 
 		var drawGradient = function(gl, cols, texture) {
@@ -162,6 +177,8 @@ p {
 		}
 
 		function animate() {
+			resize(container);
+
 			animatePoints(points, velocities);
 
 			drawGradient(gl, bananaCols, texture);
